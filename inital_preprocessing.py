@@ -1,5 +1,6 @@
 """This script loades and saves the CSV files as h5 files with reasonable
-pandas formats.
+pandas formats. See https://www.dataquest.io/blog/pandas-big-data/ for 
+a discussion on big-ish data loading in pandas.
 """
 
 from path import Path
@@ -45,14 +46,14 @@ if not taxi_out_path.isfile():
     print("No h5 file found, generating from csv")
     taxi = load_and_clean(taxi_cols, taxi_dtypes, taxi_in_path)
     # Save as hdf for much faster loading in the future.
-    taxi.to_hdf(taxi_out_path, key='df', mode='w')
+    taxi.to_hdf(taxi_out_path, key='df', mode='w',format='table')
     print(taxi.info(memory_usage='deep')) # 1.8 GB
     del(taxi)
 
 elif not tnp_out_path.isfile():
     print("No h5 file found, generating from csv")
     tnp = load_and_clean(tnp_cols, tnp_dtypes, tnp_in_path)
-    tnp.to_hdf(tnp_out_path, key='df', mode='w')
+    tnp.to_hdf(tnp_out_path, key='df', mode='w',format='table')
     print(tnp.info(memory_usage='deep'))
     del(tnp)
 
