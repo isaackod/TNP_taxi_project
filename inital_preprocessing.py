@@ -1,6 +1,6 @@
 """This script loades and saves the CSV files as h5 files with reasonable
 pandas formats. See https://www.dataquest.io/blog/pandas-big-data/ for 
-a discussion on big-ish data loading in pandas.
+a discussion on big-ish data loading in pandas. No further cleaning is done here.
 """
 
 from path import Path
