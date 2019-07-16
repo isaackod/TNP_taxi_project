@@ -52,14 +52,16 @@ class Stop(object):
 
 
 class Ride(object):
-    def __init__(self, start, end,time = datetime.now()):
+    def __init__(self, start, end,time = datetime.now(), bRideshare = True, bShared = False):
         self.start = Stop(start)
         self.end = Stop(end)
         self.time = time
         self.path = [self.start,self.end]
         self.as_row = {}
         self.gm = None
-        
+        self.bShared = bShared
+        self.bRideshare = bRideshare
+   
         self.build_row()
         
     def __repr__(self):
@@ -77,13 +79,17 @@ class Ride(object):
             self.gmaps_call()
         self.as_row['Trip_Seconds'] = self.gm['time_s']
         self.as_row['Trip_Miles'] = self.gm['dist_m']/1609.34
+        if self.bRideshare:
+            self.as_row['Shared_Trip_Authorized'] = self.bShared
+     
         self.as_row['Pickup_Centroid_Latitude'] = self.gm['start_latlong'][0]
         self.as_row['Pickup_Centroid_Longitude'] = self.gm['start_latlong'][1]
-        self.as_row['Pickup_Dropoff_Latitude'] = self.gm['end_latlong'][0]
-        self.as_row['Pickup_Dropoff_Longitude'] = self.gm['end_latlong'][1]
+        self.as_row['Dropoff_Centroid_Latitude'] = self.gm['end_latlong'][0]
+        self.as_row['Dropoff_Centroid_Longitude'] = self.gm['end_latlong'][1]
         self.as_row['vel_mph'] = self.as_row['Trip_Miles']/(self.as_row['Trip_Seconds']/3600)
         self.add_airport()
         self.add_time()
+      
    
     def add_airport(self):
         if self.start.bAirport or self.end.bAirport:
@@ -92,7 +98,7 @@ class Ride(object):
             self.as_row['bAirport'] = False
     
     def add_time(self):
-        self.as_row['hour'] = self.time.hour
         self.as_row['day_of_wk'] = self.time.weekday()
+        self.as_row['hour'] = self.time.hour
         
     
