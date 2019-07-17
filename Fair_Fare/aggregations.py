@@ -74,3 +74,72 @@ class bin_on_trips(object):
                               )
         self.total_unique_paths = self.df.groupby('path').Trip_Miles.count().count()
         
+        
+class bin_on_time_distance(object):
+    """Takes a cleaned taxi or TNP dataframe and bins on time and distance"""
+    def __init__(self, dataframe):
+        self.df = dataframe
+        
+        self.nbins = 50
+        self.nbins_after_cutoff = 20
+        # cutoffs were just chosen based on a histogram of the values the parameter takes
+        self.seconds_cutoff = 1600
+        self.miles_cutoff = 10
+        self.miles_nbins = 30 # miles has discrete jumps, using fewer bns
+        self.seconds_nbins = 50
+        
+        self.seconds_b= None
+        self.miles_b = None
+        
+        self.seconds_interval = ()
+        self.miles_interval = ()
+        
+        self.cut_along_time_distance()
+        
+        
+    def check_oob(self, td_tup):
+        if ((td_tup[0]<self.seconds_interval[0]) or (td_tup[0]>self.seconds_interval[1]) or
+            (td_tup[1]<self.miles_interval[0]) or (td_tup[1]>self.miles_interval[1])):
+            return True
+        else:
+            return False
+       
+    def time_distance_to_bin(self, td_tup):
+        if self.check_oob(td_tup):
+            raise ValueError("Exceeded the maximum or minimum length trip.")
+        else:
+            # bin is the where the value just exceeds the axis.
+            sec_b = np.where(self.seconds_b-td_tup[0]<0)[0][-1]
+            mi_b = np.where(self.miles_b-td_tup[1]<0)[0][-1]
+            return (sec_b, mi_b)
+
+    def bin_on_counts(self, arr, cutoff, nbins, nbins_after_cutoff = 20):
+        """adaptive bins based on bin size up until a cutoff, then linearly spaced."""
+        start, end = np.min(arr), np.max(arr)
+        arr = np.sort(arr)
+        n_below_cutoff = np.sum(arr <cutoff)
+        n = len(arr)
+        lowarr = arr[:n_below_cutoff]
+        spacing = int(n_below_cutoff/nbins)
+        locs= np.arange(0,n_below_cutoff,spacing)
+        low_idxs = lowarr[locs]
+        cutoff_spacing = (end-cutoff)/nbins_after_cutoff 
+        high_idxs = np.arange(cutoff, end, cutoff_spacing)
+        return np.hstack((low_idxs[:-1], high_idxs)), (start,end)
+    
+    def cut_along_time_distance(self):
+        """Add a _b binned column foreach lat and long, also a tuple of all the bins"""
+        seconds = self.df.Trip_Seconds.values
+        miles = self.df.Trip_Miles.values
+        
+        self.seconds_b, self.seconds_interval = self.bin_on_counts(seconds, self.seconds_cutoff,self.seconds_nbins)
+        self.miles_b, self.miles_interval = self.bin_on_counts(miles, self.miles_cutoff, self.miles_nbins)
+        
+        self.df["seconds_b"] = pd.cut(self.df["Trip_Seconds"],
+                                             bins = self.seconds_b, labels = np.arange(len(self.seconds_b)-1), retbins=False)
+        
+        self.df["miles_b"]  = pd.cut(self.df["Trip_Miles"],
+                                             bins = self.miles_b, labels = np.arange(len(self.miles_b)-1), retbins=False)
+        self.df["td_bin"] = list(zip(self.df["seconds_b"],self.df["miles_b"]))
+        
+        

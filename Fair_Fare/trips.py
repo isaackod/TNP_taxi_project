@@ -44,7 +44,6 @@ class Stop(object):
         ohare = (41.9742, -87.9073)
         d1 = haversine_dist(self.lat, self.long,midway[0],midway[1])
         d2 = haversine_dist(self.lat, self.long,ohare[0],ohare[1])
-        print(d1,d2)
         airport_flag = d1 < thresh_km
         airport_flag |= d2 < thresh_km
         self.bAirport = airport_flag
@@ -62,6 +61,8 @@ class Ride(object):
         self.path = (self.start.tuple,self.end.tuple)
         self.as_row = {}
         self.gm = None
+        self.traveltime = None
+        self.miles = None
         self.bShared = bShared
         self.bRideshare = bRideshare
    
@@ -81,8 +82,10 @@ class Ride(object):
     def build_row(self):
         if not self.gm:
             self.gmaps_call()
-        self.as_row['Trip_Seconds'] = self.gm['time_s']
-        self.as_row['Trip_Miles'] = self.gm['dist_m']/1609.34
+        self.miles = self.gm['dist_m']/1609.34
+        self.traveltime = self.gm['time_s']
+        self.as_row['Trip_Seconds'] = self.traveltime
+        self.as_row['Trip_Miles'] = self.miles
         if self.bRideshare:
             self.as_row['Shared_Trip_Authorized'] = self.bShared
      
