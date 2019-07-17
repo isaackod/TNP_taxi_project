@@ -1,19 +1,19 @@
-from datetime import datetime
-
 from .feature_utils import haversine_dist
 from .api_interactions import gmaps_handler
 
 
 
 class Stop(object):
-    """Small class to keep track of lat/long and geocode of a point on a map."""
+    """Keeps track of lat/long and geocode of a point on a map. Also checks if it's near a Chicago airport."""
     def __init__(self, location):
         self.bGeocoded= False
         self.bAirport = None
+        self.tuple = None
         
         if isinstance(location, tuple):
             self.lat = location[0]
             self.long = location[1]
+            self.tuple = location
             self.geocode = location
         elif isinstance(location, str):
             self.lat = None
@@ -29,34 +29,37 @@ class Stop(object):
             return(f"Coordinates: {(self.lat,self.long)}")
             
     
-    # TODO: use properties and setters instead of just updating internl vars
+    # TODO: use properties and setters instead of just updating internal vars
     def update_params(self, lat,long,geocode):
         self.lat = lat
         self.long = long
+        self.tuple = (self.lat,self.long)
         self.geocode = geocode
         self.bGeocoded= True
+        self.update_airport()
         
     
-    def bAirport(self,thresh_km = 1):
+    def update_airport(self,thresh_km = 3):
         midway = (41.7868, -87.7522)
         ohare = (41.9742, -87.9073)
-        airport_flag = haversine_dist(self.lat, self.long,
-                       midway[0],
-                       midway[1]) < thresh_km
-        airport_flag |= haversine_dist(self.lat, self.long,
-                       ohare[0],
-                       ohare[1]) < thresh_km
+        d1 = haversine_dist(self.lat, self.long,midway[0],midway[1])
+        d2 = haversine_dist(self.lat, self.long,ohare[0],ohare[1])
+        print(d1,d2)
+        airport_flag = d1 < thresh_km
+        airport_flag |= d2 < thresh_km
         self.bAirport = airport_flag
         
         
 
 
 class Ride(object):
-    def __init__(self, start, end,time = datetime.now(), bRideshare = True, bShared = False):
+    """Defines a ride consisting of two 'Stop' classes. Pulls additional info and geocoding from 
+    the google maps API for that route. Formats the ride in a way suitible to the ML model predictions."""
+    def __init__(self, start, end,time, bRideshare = True, bShared = False):
         self.start = Stop(start)
         self.end = Stop(end)
         self.time = time
-        self.path = [self.start,self.end]
+        self.path = (self.start.tuple,self.end.tuple)
         self.as_row = {}
         self.gm = None
         self.bShared = bShared
@@ -73,6 +76,7 @@ class Ride(object):
         self.gm = gmaps_handler(self.start.geocode,self.end.geocode, self.time)
         self.start.update_params(self.gm['start_latlong'][0],self.gm['start_latlong'][1],self.gm['start_geocoded'])
         self.end.update_params(self.gm['end_latlong'][0],self.gm['end_latlong'][1],self.gm['end_geocoded'])
+        self.path = (self.start.tuple,self.end.tuple)
    
     def build_row(self):
         if not self.gm:

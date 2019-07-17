@@ -1,5 +1,6 @@
 import googlemaps
 import json
+import requests
 
 def gmaps_handler(start, end, time):
     with open("./secrets.json.nogit") as fh:
@@ -27,4 +28,36 @@ def gmaps_handler(start, end, time):
         else:
             out[newname] = int(list(vals.values())[1])
     return out
+
+
+def parse_lyft_api(json_response):
+    out = {}
+    for ride_type in json_response['cost_estimates']:
+        min_c, max_c = ride_type['estimated_cost_cents_min'],ride_type['estimated_cost_cents_max']
+        duration = ride_type['estimated_duration_seconds']
+        if ride_type['ride_type'] == 'lyft_line':
+            out['shared_min_p'] = min_c
+            out['shared_max_p'] = max_c
+        elif ride_type['ride_type'] == 'lyft':
+            out['min_p'] = min_c
+            out['max_p'] = max_c
+            out['trip_time_s'] = duration
+    return out
+
+def price_estimate_from_lyft(start,end):
+    """Calls lyft API for latlong tuples at start and end."""
+    params = {'start_lat':start[0], 
+            'start_lng': start[1], 
+            'end_lat': end[0],
+            'end_lng': end[1]
+             }
+    response = requests.get('https://www.lyft.com/api/costs?', params=params,timeout=5)
+    try:
+        return parse_lyft_api(response.json())
+    except:
+        raise ValueError('Unable to get result from Lyft API.')
+
+
+
+
         

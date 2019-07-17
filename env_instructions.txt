@@ -4,6 +4,8 @@ conda env export | grep -v "^prefix: " > environment.yml
 And to create on new machine:
 conda env create -f environment.yml
 
+or if it exists:
+conda env update -f environment.yml
+
 Switch and then run:
 conda update pip
-
