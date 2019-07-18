@@ -77,7 +77,7 @@ class bin_on_trips(object):
         
 class bin_on_time_distance(object):
     """Takes a cleaned taxi or TNP dataframe and bins on time and distance"""
-    def __init__(self, dataframe):
+    def __init__(self, dataframe, miles_nbins = 30, seconds_nbins = 50):
         self.df = dataframe
         
         self.nbins = 50
@@ -85,8 +85,8 @@ class bin_on_time_distance(object):
         # cutoffs were just chosen based on a histogram of the values the parameter takes
         self.seconds_cutoff = 1600
         self.miles_cutoff = 10
-        self.miles_nbins = 30 # miles has discrete jumps, using fewer bns
-        self.seconds_nbins = 50
+        self.miles_nbins = miles_nbins # miles has discrete jumps, using fewer bns
+        self.seconds_nbins = seconds_nbins
         
         self.seconds_b= None
         self.miles_b = None
