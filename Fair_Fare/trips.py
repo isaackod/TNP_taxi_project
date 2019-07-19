@@ -88,6 +88,8 @@ class Ride(object):
         self.as_row['Trip_Miles'] = self.miles
         if self.bRideshare:
             self.as_row['Shared_Trip_Authorized'] = self.bShared
+        elif 'Shared_Trip_Authorized' in self.as_row:
+            del self.as_row['Shared_Trip_Authorized']
      
         self.as_row['Pickup_Centroid_Latitude'] = self.gm['start_latlong'][0]
         self.as_row['Pickup_Centroid_Longitude'] = self.gm['start_latlong'][1]

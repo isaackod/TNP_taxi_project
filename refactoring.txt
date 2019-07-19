@@ -1,0 +1,14 @@
+Here's a list of the big refactoring needs that occured to me after making a 
+'working app'.
+
+- Time forecasting requires requesting traffic data from google at each time. Is there a simpler API call to do this? Otherwise need to parallelize the requests.
+
+- Need to re-think/cleanup the Ride class. In top-level, I ended up re-running a bunch of internal class methods. Probably should break up the functionality of formatting for the predictor and the ride.
+
+- The entire chain that computes aggregates is somewhat off. For example:
+	- The 'adaptive bin size' wants continuous values, and can fail if the input has 		Large discrete steps.
+	- The kde module doesn't always give the same output as pandas kde (using it 		incorrectlty?)
+	- It's possible that there's some mix-up in either the filtering or naming 
+	of shared vs unshared ridesharing rides. I need to look at this carefully.
+
+- The current visualization is a bit clunky.
