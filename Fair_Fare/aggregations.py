@@ -86,7 +86,6 @@ class bin_on_time_distance(object):
         self.seconds_cutoff = seconds_cutoff
         self.miles_cutoff = miles_cutoff
 
-        
         self.seconds_b= None
         self.miles_b = None
         
@@ -131,7 +130,7 @@ class bin_on_time_distance(object):
         """adaptive bins no cutoff."""
         start, end = np.min(arr), np.max(arr)
         # add small noise to allow sorting to be essentially unique if input data is discrete:
-        arr += np.random.uniform(0,1e-6,len(arr))
+        arr += np.random.uniform(0,1e-4,len(arr))
         arr = np.sort(arr)
         spacing = int(len(arr)/self.nbins)
         locs= np.arange(0,len(arr),spacing)
