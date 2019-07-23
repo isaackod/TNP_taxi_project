@@ -3,4 +3,5 @@
 *.pkl
 *.h5
 *.nogit
+*.pyc
 

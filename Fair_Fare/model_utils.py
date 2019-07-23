@@ -1,5 +1,8 @@
+"""Utilities to interact with a saved model file from xgboost."""
+
 import xgboost as xgb
 import pandas as pd
+
 
 def get_model_from_file(fname):
     bst = xgb.Booster()

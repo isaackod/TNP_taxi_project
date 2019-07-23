@@ -77,16 +77,15 @@ class bin_on_trips(object):
         
 class bin_on_time_distance(object):
     """Takes a cleaned taxi or TNP dataframe and bins on time and distance"""
-    def __init__(self, dataframe, miles_nbins = 30, seconds_nbins = 50):
+    def __init__(self, dataframe, nbins = (50,0),seconds_cutoff = 1600,miles_cutoff = 10, bUseCutoff = False):
         self.df = dataframe
         
-        self.nbins = 50
-        self.nbins_after_cutoff = 20
+        self.nbins = nbins[0]
+        self.nbins_after_cutoff = nbins[1]
         # cutoffs were just chosen based on a histogram of the values the parameter takes
-        self.seconds_cutoff = 1600
-        self.miles_cutoff = 10
-        self.miles_nbins = miles_nbins # miles has discrete jumps, using fewer bns
-        self.seconds_nbins = seconds_nbins
+        self.seconds_cutoff = seconds_cutoff
+        self.miles_cutoff = miles_cutoff
+
         
         self.seconds_b= None
         self.miles_b = None
@@ -94,7 +93,7 @@ class bin_on_time_distance(object):
         self.seconds_interval = ()
         self.miles_interval = ()
         
-        self.cut_along_time_distance()
+        self.cut_along_time_distance(bUseCutoff)
         
         
     def check_oob(self, td_tup):
@@ -113,27 +112,44 @@ class bin_on_time_distance(object):
             mi_b = np.where(self.miles_b-td_tup[1]<0)[0][-1]
             return (sec_b, mi_b)
 
-    def bin_on_counts(self, arr, cutoff, nbins, nbins_after_cutoff = 20):
+    def bin_on_counts_linmix(self, arr, cutoff):
         """adaptive bins based on bin size up until a cutoff, then linearly spaced."""
         start, end = np.min(arr), np.max(arr)
+        # add small noise to allow sorting to be essentially unique if input data is discrete:
+        arr += np.random.uniform(0,1e-6,len(arr))
         arr = np.sort(arr)
         n_below_cutoff = np.sum(arr <cutoff)
-        n = len(arr)
         lowarr = arr[:n_below_cutoff]
-        spacing = int(n_below_cutoff/nbins)
+        spacing = int(n_below_cutoff/self.nbins)
         locs= np.arange(0,n_below_cutoff,spacing)
         low_idxs = lowarr[locs]
-        cutoff_spacing = (end-cutoff)/nbins_after_cutoff 
+        cutoff_spacing = (end-cutoff)/self.nbins_after_cutoff 
         high_idxs = np.arange(cutoff, end, cutoff_spacing)
-        return np.hstack((low_idxs[:-1], high_idxs)), (start,end)
+        return np.hstack((low_idxs, high_idxs)), (start,end)
     
-    def cut_along_time_distance(self):
+    def bin_on_counts(self, arr):
+        """adaptive bins no cutoff."""
+        start, end = np.min(arr), np.max(arr)
+        # add small noise to allow sorting to be essentially unique if input data is discrete:
+        arr += np.random.uniform(0,1e-6,len(arr))
+        arr = np.sort(arr)
+        spacing = int(len(arr)/self.nbins)
+        locs= np.arange(0,len(arr),spacing)
+        idxs = arr[locs]
+        return idxs, (start,end)
+    
+    def cut_along_time_distance(self, bUseCutoff):
         """Add a _b binned column foreach lat and long, also a tuple of all the bins"""
         seconds = self.df.Trip_Seconds.values
         miles = self.df.Trip_Miles.values
         
-        self.seconds_b, self.seconds_interval = self.bin_on_counts(seconds, self.seconds_cutoff,self.seconds_nbins)
-        self.miles_b, self.miles_interval = self.bin_on_counts(miles, self.miles_cutoff, self.miles_nbins)
+        if bUseCutoff:
+            self.seconds_b, self.seconds_interval = self.bin_on_counts_linmix(seconds,self.seconds_cutoff)
+            self.miles_b, self.miles_interval = self.bin_on_counts_linmix(miles,self.miles_cutoff)
+            
+        else:
+            self.seconds_b, self.seconds_interval = self.bin_on_counts(seconds)
+            self.miles_b, self.miles_interval = self.bin_on_counts(miles)
         
         self.df["seconds_b"] = pd.cut(self.df["Trip_Seconds"],
                                              bins = self.seconds_b, labels = np.arange(len(self.seconds_b)-1), retbins=False)

@@ -1,8 +1,19 @@
+"""Includes any calls to external API's."""
+
 import googlemaps
 import json
 import requests
+import datetime
+import pytz
+
+
+def get_current_time_in_chicago():
+    utc_now = pytz.utc.localize(datetime.utcnow())
+    return utc_now.astimezone(pytz.timezone("America/Chicago"))
+
 
 def gmaps_handler(start, end, time):
+    """Runs the gmaps directions API and returns the info we want."""
     with open("./secrets.json.nogit") as fh:
         secrets = json.loads(fh.read())
 
