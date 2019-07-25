@@ -3,7 +3,7 @@
 import googlemaps
 import json
 import requests
-import datetime
+from datetime import datetime
 import pytz
 
 

@@ -82,6 +82,7 @@ class Ride(object):
     def build_row(self):
         if not self.gm:
             self.gmaps_call()
+            
         self.miles = self.gm['dist_m']/1609.34
         self.traveltime = self.gm['time_s']
         self.as_row['Trip_Seconds'] = self.traveltime

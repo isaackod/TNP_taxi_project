@@ -1,7 +1,7 @@
-*.csv
-*.ipynb_checkpoints
-*.pkl
-*.h5
-*.nogit
-*.pyc
+**.csv
+**.ipynb_checkpoints
+**.pkl
+**.h5
+**.nogit
+**.pyc
 

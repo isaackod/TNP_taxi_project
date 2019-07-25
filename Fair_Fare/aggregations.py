@@ -130,7 +130,8 @@ class bin_on_time_distance(object):
         """adaptive bins no cutoff."""
         start, end = np.min(arr), np.max(arr)
         # add small noise to allow sorting to be essentially unique if input data is discrete:
-        arr += np.random.uniform(0,1e-4,len(arr))
+        # This is sort of a disaster becasuse it indroduces the possibility of random failure... hopefully highly improbable
+        arr += np.random.uniform(-1e-3,1e-3,len(arr))
         arr = np.sort(arr)
         spacing = int(len(arr)/self.nbins)
         locs= np.arange(0,len(arr),spacing)
