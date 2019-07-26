@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block content %}
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>The App</h1>
+        <p class="lead">Fair Fare allows you to compare prices for ridesharing and taxis in Chicago in real time.
+          <br>To get started, enter a route below:</p>
+      </div>
+      <form action="" method="post" novalidate></form>
+      {{ wtf.quick_form(form) }}
+      </form>
+
+    </div><!-- /.container -->
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+{% endblock %}
+
+
