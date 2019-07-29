@@ -1,6 +1,7 @@
-from flask import render_template,flash, redirect
+from flask import render_template,flash, redirect, send_file, session, url_for, request
 from app import app
 from app.forms import TripForm
+import ast
 
 
 ## Model and Data setup
@@ -12,6 +13,7 @@ from .data_science_part.model_utils import get_model_from_file, predict_fare
 from .data_science_part.trips import Stop, Ride
 from .data_science_part.api_interactions import price_estimate_from_lyft, get_current_time_in_chicago
 from .data_science_part.top_level import run_Fair_Fare
+from .data_science_part.folium_map import generate_map
 
 
 models = {"path":"../models/", "taxi":"taxi_xgb_full_reduced_params", "rideshare":"tnp_xgb_full_reduced_params" }
@@ -37,10 +39,10 @@ def chicagoize(in_str):
         return in_str + ' chicago'
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = TripForm()
+    session['preds'] = {}
     if form.validate_on_submit():
         USER_PARAMS = {"pickup": chicagoize(form.pickup.data),
                "dropoff": chicagoize(form.dropoff.data),
@@ -49,7 +51,37 @@ def index():
         res = run_Fair_Fare(USER_PARAMS,rideshare_binned,
                         taxi_binned,taxi_model,rideshare_model)
 
-        flash('Route: {}, {}, {}'.format(
-            chicagoize(form.pickup.data), form.dropoff.data,res[0]['Taxi_price_estimate'][0]))
-        return redirect('/')
+        ride_dict = res['ride_object'].info_dict()
+
+        poly = res['ride_object'].poly
+
+        generate_map(poly)
+
+        return redirect(url_for('results', model_dict = res['model_estimates'], ride_dict = ride_dict))
     return render_template('index.html', form = form)
+
+
+@app.route('/map.html')
+def show_map():
+    return send_file('map.html')
+
+
+@app.route('/results')
+def results():
+    # probably a better way to pass dicts than literal_eval...
+    model_vals = ast.literal_eval(request.args.get('model_dict'))
+    ride_info = ast.literal_eval(request.args.get('ride_dict'))
+    flash(model_vals)
+    return render_template('results.html', ride_info = ride_info, model_vals = model_vals)
+
+@app.route('/data')
+def data_info():
+    flash('under construction')
+    return render_template('data.html')
+
+
+
+@app.route('/details', methods=['GET'])
+def details():
+    flash('details page TBD')
+    return render_template('data.html')

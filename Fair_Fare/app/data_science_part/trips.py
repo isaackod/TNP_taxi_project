@@ -63,6 +63,7 @@ class Ride(object):
         self.gm = None
         self.traveltime = None
         self.miles = None
+        self.poly = None
         self.bShared = bShared
         self.bRideshare = bRideshare
    
@@ -78,6 +79,7 @@ class Ride(object):
         self.start.update_params(self.gm['start_latlong'][0],self.gm['start_latlong'][1],self.gm['start_geocoded'])
         self.end.update_params(self.gm['end_latlong'][0],self.gm['end_latlong'][1],self.gm['end_geocoded'])
         self.path = (self.start.tuple,self.end.tuple)
+        self.poly = self.gm['poly']
    
     def build_row(self):
         if not self.gm:
@@ -110,5 +112,12 @@ class Ride(object):
     def add_time(self):
         self.as_row['day_of_wk'] = self.time.weekday()
         self.as_row['hour'] = self.time.hour
+
+    def info_dict(self):
+        ret = {}
+        ret['start'] = self.start.geocode
+        ret['end'] = self.end.geocode
+        ret.update(self.as_row)
+        return ret
         
     

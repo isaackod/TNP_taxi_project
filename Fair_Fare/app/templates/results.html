@@ -1,0 +1,85 @@
+ 
+ 
+ {% extends "base.html" %}
+
+
+{% block title %}
+results page
+{% endblock %}
+ 
+
+ {% block content %}
+ 
+  <h3 align="center">Geocoded Trip Info</h3>
+    <p align="center">
+    <iframe src="{{ url_for('show_map') }}" width="500" height="281"></iframe>
+    </p>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+<table class="table table-hover">
+  <thead>
+
+  <tbody>
+    <tr>
+      <th scope="row">Start</th>
+      <td>{{ride_info['start']}}</td>
+
+    </tr>
+    <tr>
+      <th scope="row">End</th>
+      <td>{{ride_info['end']}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Time [s]</th>
+      <td>{{ride_info['Trip_Seconds']}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Distance [Miles]</th>
+      <td>{{ride_info['Trip_Miles']}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Hour of Day</th>
+      <td>{{ride_info['hour']}}</td>
+
+    </tr>
+</table>
+
+<h3 align="center">Model Results</h3>
+
+
+<table class="table table-hover table-dark">
+  <thead>
+    <tr>
+      <th scope="col">Ride Type</th>
+      <th scope="col">Estimated Fare</th>
+      <th scope="col">Average Fair For Similar</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Pooled Ridesharing</th>
+      <td>{{model_vals['Rideshare_pooled_price_estimate'][0]}}</td>
+
+    </tr>
+    <tr>
+      <th scope="row">Regular Ridesharing</th>
+      <td>{{model_vals['Rideshare_regular_price_estimate'][0]}}</td>
+
+    </tr>
+    <tr>
+      <th scope="row"> Taxi </th>
+      <td >{{model_vals['Taxi_price_estimate'][0]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+{% endblock %}

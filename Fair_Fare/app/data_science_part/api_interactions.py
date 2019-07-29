@@ -38,6 +38,11 @@ def gmaps_handler(start, end, time):
             out[newname] = tuple([float(val) for val in vals.values()])
         else:
             out[newname] = int(list(vals.values())[1])
+            
+    # polyline to show the route
+    poly = directions_result[0]['overview_polyline']['points']
+    out['poly'] = poly
+
     return out
 
 

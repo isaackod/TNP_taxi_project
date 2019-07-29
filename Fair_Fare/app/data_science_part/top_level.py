@@ -35,7 +35,6 @@ def run_model_and_gdirections_api(start, end, start_time,taxi_model,rideshare_mo
 def text_to_fares(binned_rs,binned_tax, start, end, taxi_model,rideshare_model, forecast_hours = 1):
     curr_time = get_current_time_in_chicago()
     model_estimate, ride = run_model_and_gdirections_api(start, end,curr_time,taxi_model,rideshare_model, forecast_hours)
-    
 
     lyft_estimates = price_estimate_from_lyft(ride.start.tuple,ride.end.tuple)
 
@@ -45,7 +44,7 @@ def text_to_fares(binned_rs,binned_tax, start, end, taxi_model,rideshare_model, 
     group_rs,  group_tax = ride_subset_from_time_distance(td_tup,binned_tax,binned_rs)
 
     
-    return model_estimate, lyft_estimates, group_tax, group_rs
+    return model_estimate, lyft_estimates, group_tax, group_rs, ride
 
 def ride_subset_from_time_distance(td_tup,binned_tax,binned_rs):
     """select only rides corresponding to bin containing td_tup = (time, distance)"""
@@ -55,7 +54,7 @@ def ride_subset_from_time_distance(td_tup,binned_tax,binned_rs):
     
 def run_Fair_Fare(USER_PARAMS,rideshare_binned,taxi_binned,taxi_model,rideshare_model):
 
-    rideshare_model_pred, lyft_estimate,taxi_group, rideshare_group= text_to_fares(rideshare_binned,taxi_binned,
+    model_estimate, lyft_estimate,taxi_group, rideshare_group, ride = text_to_fares(rideshare_binned,taxi_binned,
                                                                                    USER_PARAMS['pickup'], USER_PARAMS['dropoff'],taxi_model,rideshare_model, 
                                                                                    USER_PARAMS['forecast_hrs'])
 
@@ -63,5 +62,9 @@ def run_Fair_Fare(USER_PARAMS,rideshare_binned,taxi_binned,taxi_model,rideshare_
     rideshare_fares = rideshare_group[rideshare_group["Shared_Trip_Authorized"] == False].Final_Fare
     taxi_fares = taxi_group.Final_Fare
 
-    
-    return rideshare_model_pred, lyft_estimate, rideshare_shared_fares,rideshare_fares,taxi_fares
+    ret_d = {'model_estimates': model_estimate, 
+    'lyft_api_estimate':lyft_estimate, 
+    'fare_aggs': {'rs_s':rideshare_shared_fares,'rs':rideshare_fares,'taxi':taxi_fares},
+    'ride_object': ride}
+
+    return ret_d
