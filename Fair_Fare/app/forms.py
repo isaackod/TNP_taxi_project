@@ -6,5 +6,5 @@ from wtforms.validators import DataRequired
 class TripForm(FlaskForm):
     pickup = StringField('Pickup', validators=[DataRequired()])
     dropoff = StringField('Dropoff', validators=[DataRequired()])
-    show_pooled = BooleanField('Show pooled trips')
+    show_pooled = BooleanField('Custom departure time')
     submit = SubmitField('Go!')

@@ -1,6 +1,7 @@
 from flask import render_template,flash, redirect, send_file, session, url_for, request
 from app import app
 from app.forms import TripForm
+import time
 import ast
 
 
@@ -14,7 +15,7 @@ from .data_science_part.trips import Stop, Ride
 from .data_science_part.api_interactions import price_estimate_from_lyft, get_current_time_in_chicago
 from .data_science_part.top_level import run_Fair_Fare
 from .data_science_part.folium_map import generate_map
-
+from .data_science_part.plotting import build_hists_for_altair, build_preds_for_altair, show_viz
 
 models = {"path":"../models/", "taxi":"taxi_xgb_full_reduced_params", "rideshare":"tnp_xgb_full_reduced_params" }
 data = {"path":"../data/","taxi":"taxi_test.h5", "rideshare":"tnp_test.h5" }
@@ -52,10 +53,12 @@ def index():
                         taxi_binned,taxi_model,rideshare_model)
 
         ride_dict = res['ride_object'].info_dict()
-
+    
         poly = res['ride_object'].poly
 
         generate_map(poly)
+
+        show_viz(res['fare_aggs'], res['model_estimates'])
 
         return redirect(url_for('results', model_dict = res['model_estimates'], ride_dict = ride_dict))
     return render_template('index.html', form = form)
@@ -63,15 +66,32 @@ def index():
 
 @app.route('/map.html')
 def show_map():
-    return send_file('map.html')
+    return send_file('static/map.html')
 
+@app.route('/hist.html')
+def show_hist():
+    return send_file('static/hist.html')
+
+
+## prevent caching for the map
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 @app.route('/results')
 def results():
     # probably a better way to pass dicts than literal_eval...
     model_vals = ast.literal_eval(request.args.get('model_dict'))
     ride_info = ast.literal_eval(request.args.get('ride_dict'))
-    flash(model_vals)
+    #flash(request.args.get('poly'))
     return render_template('results.html', ride_info = ride_info, model_vals = model_vals)
 
 @app.route('/data')

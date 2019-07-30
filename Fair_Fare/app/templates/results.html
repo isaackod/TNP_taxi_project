@@ -3,7 +3,16 @@
  {% extends "base.html" %}
 
 
-{% block title %}
+ {% block head %}
+ {{super()}}
+ <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega@4"></script>
+ <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-lite@3.2.1"></script>
+ <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@3"></script>
+ 
+ 
+ {% endblock %}
+
+ {% block title %}
 results page
 {% endblock %}
  
@@ -61,7 +70,7 @@ results page
     <tr>
       <th scope="col">Ride Type</th>
       <th scope="col">Estimated Fare</th>
-      <th scope="col">Average Fair For Similar</th>
+      <th scope="col">Good deal for ride type?</th>
     </tr>
   </thead>
   <tbody>
@@ -82,4 +91,22 @@ results page
   </tbody>
 </table>
 
+<h3 align="center">Historical Fare Visualization</h3>
+
+<div id='vis'></div>
+
+<p align="center">
+    <iframe src="{{ url_for('show_hist') }}" width="500" height="281"></iframe>
+  </p>
+
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script>
+
+
+//var spec = 'static/hist.json';
+//SvegaEmbed("#vis", spec);
+</script>
 {% endblock %}

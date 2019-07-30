@@ -33,7 +33,7 @@ def build_preds_for_altair(predictions):
     return pred_df.melt(id_vars = "hour").rename(columns = {"variable":"parameter"})
 
 
-def show_viz(results, fare_dict, predictions):
+def show_viz(fare_dict, predictions):
     """fare_dict needs to include pooled, rs, and taxi fare values. Predictions are from ML model"""
 
     long_df = build_hists_for_altair(fare_dict)
@@ -101,4 +101,6 @@ def show_viz(results, fare_dict, predictions):
         orient='top-right',
         symbolType = 'circle'
     )
-    return layer
+
+    layer.save("./app/static/hist.html")
+    #return layer

@@ -27,4 +27,4 @@ def generate_map(poly):
     folium.Marker(path[0], popup='<i>Start</i>', icon=folium.Icon(color='green')).add_to(m)
     folium.Marker(path[-1], popup='<i>Stop</i>', tooltip="stop",icon=folium.Icon(color='red')).add_to(m)
     folium.PolyLine(path, color="red", weight=2.5, opacity=1).add_to(m)
-    m.save('./app/templates/map.html')
+    m.save('./app/static/map.html')
