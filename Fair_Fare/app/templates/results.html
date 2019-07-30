@@ -48,12 +48,12 @@ results page
       <td>{{ride_info['end']}}</td>
     </tr>
     <tr>
-      <th scope="row">Time [s]</th>
-      <td>{{ride_info['Trip_Seconds']}}</td>
+      <th scope="row">Time [min]</th>
+      <td>{{(ride_info['Trip_Seconds']/60)|int}}</td>
     </tr>
     <tr>
       <th scope="row">Distance [Miles]</th>
-      <td>{{ride_info['Trip_Miles']}}</td>
+      <td>{{ride_info['Trip_Miles'] | round(1)}}</td>
     </tr>
     <tr>
       <th scope="row">Hour of Day</th>
@@ -70,23 +70,32 @@ results page
     <tr>
       <th scope="col">Ride Type</th>
       <th scope="col">Estimated Fare</th>
-      <th scope="col">Good deal for ride type?</th>
+      <th scope="col">Average Price for similar ride</th>
+      <th scope="col">Price trend (next few hours)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th scope="row">Pooled Ridesharing</th>
-      <td>{{model_vals['Rideshare_pooled_price_estimate'][0]}}</td>
+      <td>{{prices['Rideshare_pooled_price_estimate']}}</td>
+      <td>{{ride_info['Pooled_Rideshare_mean']}}</td>
+      <td>{{price_trend['Rideshare_pooled_price_estimate']}}</td>
+      
 
     </tr>
     <tr>
       <th scope="row">Regular Ridesharing</th>
-      <td>{{model_vals['Rideshare_regular_price_estimate'][0]}}</td>
+      <td>{{prices['Rideshare_regular_price_estimate']}}</td>
+      <td>{{ride_info['Regular_Rideshare_mean']}}</td>
+      <td>{{price_trend['Rideshare_regular_price_estimate']}}</td>
 
     </tr>
     <tr>
       <th scope="row"> Taxi </th>
-      <td >{{model_vals['Taxi_price_estimate'][0]}}</td>
+      <td >{{prices['Taxi_price_estimate']}}</td>
+      <td>{{ride_info['Taxi_mean']}}</td>
+      <td>{{price_trend['Taxi_price_estimate']}}</td>
+
     </tr>
   </tbody>
 </table>
@@ -95,16 +104,31 @@ results page
 
 <div id='vis'></div>
 
+<!-- This is for a vega iframe, not as nice as embedded.
 <p align="center">
     <iframe src="{{ url_for('show_hist') }}" width="500" height="281"></iframe>
   </p>
+
+-->
 
 {% endblock %}
 
 {% block scripts %}
 {{super()}}
 <script>
-
+// see https://github.com/lemoncyb/flasked-altair/blob/master/templates/cars.html
+function parse(url, div) {
+        var opt = {
+          mode: "vega-lite",
+          renderer: "svg",
+          actions: {export: true, source: false, editor: false}
+        };
+        vegaEmbed("#"+div, url, opt, function(error, result) {
+          // result.view is the Vega View, url is the original Vega-Lite specification
+          vegaTooltip.vegaLite(result.view, url);
+        });
+      }
+      parse("static/hist.json","vis");
 
 //var spec = 'static/hist.json';
 //SvegaEmbed("#vis", spec);

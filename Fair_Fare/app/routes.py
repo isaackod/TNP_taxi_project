@@ -39,6 +39,23 @@ def chicagoize(in_str):
     else:
         return in_str + ' chicago'
 
+def price_trend(val_dict):
+    res = {}
+    for key, vals in val_dict.items():
+        cur_price = vals[0]
+        if len(vals) > 3:
+            future_price = sum(vals[1:4])/3
+            savings = future_price/cur_price-1
+            if savings > .05:
+                res[key] = f"Prices increasing ({int(savings*100)}%)"
+            elif savings < -.05:
+                res[key] = f"Prices decreasing ({-int(savings*100)}%"
+            else:
+                res[key]= "stable"
+        else:
+            res[key]= None
+    return res
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -47,7 +64,7 @@ def index():
     if form.validate_on_submit():
         USER_PARAMS = {"pickup": chicagoize(form.pickup.data),
                "dropoff": chicagoize(form.dropoff.data),
-               "forecast_hrs":1}
+               "forecast_hrs":5}
 
         res = run_Fair_Fare(USER_PARAMS,rideshare_binned,
                         taxi_binned,taxi_model,rideshare_model)
@@ -58,9 +75,21 @@ def index():
 
         generate_map(poly)
 
-        show_viz(res['fare_aggs'], res['model_estimates'])
+    
 
-        return redirect(url_for('results', model_dict = res['model_estimates'], ride_dict = ride_dict))
+        model_dict = res['model_estimates']
+
+        # To indicate 'fairness'
+        means = {}
+        for name, agg in res['fare_aggs'].items():
+            means[name+"_mean"] = f"{agg.mean():.2f}$"
+
+        ride_dict.update(means)
+
+        show_viz(res['fare_aggs'], res['model_estimates'])
+        
+
+        return redirect(url_for('results', model_dict = model_dict, ride_dict = ride_dict))
     return render_template('index.html', form = form)
 
 
@@ -91,8 +120,9 @@ def results():
     # probably a better way to pass dicts than literal_eval...
     model_vals = ast.literal_eval(request.args.get('model_dict'))
     ride_info = ast.literal_eval(request.args.get('ride_dict'))
-    #flash(request.args.get('poly'))
-    return render_template('results.html', ride_info = ride_info, model_vals = model_vals)
+    flash(ride_info)
+    prices = {k: f"{round(v[0]):.2f}$" for k, v in model_vals.items()}
+    return render_template('results.html', ride_info = ride_info, prices = prices, price_trend = price_trend(model_vals))
 
 @app.route('/data')
 def data_info():

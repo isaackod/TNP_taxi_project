@@ -53,14 +53,14 @@ def show_viz(fare_dict, predictions):
         clear=False, 
         bind=column_dropdown,
         name="Ride Type",
-        init={'parameter': "Rideshare_Dist"}
+        init={'parameter': columns[0]}
     )
 
     hist = alt.Chart(long_df).mark_area(point=False, size = 4).encode(
         alt.X('x',title='Ride Cost (Dollars)'),
         alt.Y('value',title='Density'),
         color=alt.Color('parameter', scale = alt.Scale(range = range_, domain = domain),legend=None)
-    )
+    ).interactive()
 
 
     filter_columns = hist.add_selection(
@@ -88,8 +88,8 @@ def show_viz(fare_dict, predictions):
         width = 800,
         title='Ridesharing Averages and Estimates'
     ).configure_axis(
-        labelFontSize=16,
-        titleFontSize=16
+        labelFontSize=20,
+        titleFontSize=20
     ).configure_title(
         fontSize=20,
         font='Courier',
@@ -102,5 +102,5 @@ def show_viz(fare_dict, predictions):
         symbolType = 'circle'
     )
 
-    layer.save("./app/static/hist.html")
+    layer.save("./app/static/hist.json")
     #return layer

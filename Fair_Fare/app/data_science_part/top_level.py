@@ -64,7 +64,7 @@ def run_Fair_Fare(USER_PARAMS,rideshare_binned,taxi_binned,taxi_model,rideshare_
 
     ret_d = {'model_estimates': model_estimate, 
     'lyft_api_estimate':lyft_estimate, 
-    'fare_aggs': {'rs_s':rideshare_shared_fares,'rs':rideshare_fares,'taxi':taxi_fares},
+    'fare_aggs': {'Pooled_Rideshare':rideshare_shared_fares,'Regular_Rideshare':rideshare_fares,'Taxi':taxi_fares},
     'ride_object': ride}
 
     return ret_d
