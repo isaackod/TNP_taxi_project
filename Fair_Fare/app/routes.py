@@ -3,6 +3,7 @@ from app import app
 from app.forms import TripForm
 import time
 import ast
+from datetime import timedelta
 
 
 ## Model and Data setup
@@ -12,7 +13,7 @@ from .data_science_part.feature_utils import load_hdf
 from .data_science_part.aggregations import bin_on_time_distance
 from .data_science_part.model_utils import get_model_from_file, predict_fare
 from .data_science_part.trips import Stop, Ride
-from .data_science_part.api_interactions import price_estimate_from_lyft, get_current_time_in_chicago
+from .data_science_part.api_interactions import price_estimate_from_lyft
 from .data_science_part.top_level import run_Fair_Fare
 from .data_science_part.folium_map import generate_map
 from .data_science_part.plotting import build_hists_for_altair, build_preds_for_altair, show_viz
@@ -64,13 +65,17 @@ def index():
     if form.validate_on_submit():
         USER_PARAMS = {"pickup": chicagoize(form.pickup.data),
                "dropoff": chicagoize(form.dropoff.data),
-               "forecast_hrs":5}
+               "forecast_hrs":5, "time":form.date.data}
+
 
         res = run_Fair_Fare(USER_PARAMS,rideshare_binned,
                         taxi_binned,taxi_model,rideshare_model)
 
+        # Add time info
         ride_dict = res['ride_object'].info_dict()
-    
+        ride_dict['departure_datetime']=str(form.date.data)
+        ride_dict['arrival_datetime']=str(form.date.data + timedelta(seconds=ride_dict['Trip_Seconds']))
+
         poly = res['ride_object'].poly
 
         generate_map(poly)
@@ -102,6 +107,25 @@ def show_hist():
     return send_file('static/hist.html')
 
 
+@app.route('/results')
+def results():
+    # probably a better way to pass dicts than literal_eval...
+    model_vals = ast.literal_eval(request.args.get('model_dict'))
+    ride_info = ast.literal_eval(request.args.get('ride_dict'))
+    #flash(ride_info)
+    prices = {k: f"{round(v[0]):.2f}$" for k, v in model_vals.items()}
+    return render_template('results.html', ride_info = ride_info, prices = prices, price_trend = price_trend(model_vals))
+
+@app.route('/splash')
+def data_info():
+    return render_template('splash.html')
+
+
+
+@app.route('/details', methods=['GET'])
+def details():
+    return render_template('implementation.html')
+
 ## prevent caching for the map
 @app.after_request
 def add_header(r):
@@ -114,24 +138,3 @@ def add_header(r):
     r.headers["Expires"] = "0"
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
-
-@app.route('/results')
-def results():
-    # probably a better way to pass dicts than literal_eval...
-    model_vals = ast.literal_eval(request.args.get('model_dict'))
-    ride_info = ast.literal_eval(request.args.get('ride_dict'))
-    flash(ride_info)
-    prices = {k: f"{round(v[0]):.2f}$" for k, v in model_vals.items()}
-    return render_template('results.html', ride_info = ride_info, prices = prices, price_trend = price_trend(model_vals))
-
-@app.route('/data')
-def data_info():
-    flash('under construction')
-    return render_template('data.html')
-
-
-
-@app.route('/details', methods=['GET'])
-def details():
-    flash('details page TBD')
-    return render_template('data.html')

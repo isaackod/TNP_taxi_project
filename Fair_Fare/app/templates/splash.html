@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+Data info page
+{% endblock %}
+
+
+{% block content %}
+
+
+<main role="main">
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+
+        <h1 class="display-3">You're flying into Chicago and need to take a car to your hotel. Should you take a cab or download an app?</h1>
+
+        <h2 class="display-3">Using machine learning, Fair Fare will find the best ride for your route.</h2>
+
+      <p><a class="btn btn-primary btn-lg bluebab" href="{{url_for('index')}}" role="button">Go to app &raquo;</a></p>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>The Data</h2>
+          <p>Fair fare combines two seperate datasets from the city of Chicago to get 100 million taxi and
+              ridesharing trips. Each dataset is cleaned and saved in a common format. Real time traffic and routing information is obtained from the Google maps Directions API.
+          </p>
+          <p><a class="btn btn-secondary" href="https://data.cityofchicago.org/Transportation/Taxi-Trips/wrvz-psew" role="button">Taxi Dataset &raquo;</a>
+          <a class="btn btn-secondary" href="https://data.cityofchicago.org/Transportation/Transportation-Network-Providers-Trips/m6dm-c72p" role="button">Ridesharing Dataset &raquo;</a>
+          <a class="btn btn-secondary" href="https://developers.google.com/maps/documentation/directions/start" role="button">Maps API &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>The Model</h2>
+          <p>A subset of features suitble for use in a real-time application are used to to train a gradient boosted tree model for each dataset. 
+              The model has a MSE of 1$ on the taxi test set and a 2$ MSE for ridesharing trips.  </p>
+          <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>The App</h2>
+          <p>
+              The webapp allows users to select a time and route. This information is geocoded and passed to the ML and aggregation pipleline
+              to provide current price estimates, future price trands and price comparison to 
+              historical averages for similar routes. 
+          </p>
+        </div>
+      </div>
+
+      <hr>
+
+    </div> <!-- /container -->
+
+  </main>
+
+{% endblock %}

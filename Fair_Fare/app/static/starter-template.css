@@ -6,6 +6,22 @@ body {
   text-align: center;
 }
 
+.jumbotron {
+  background-image: url("cover_photo_dark.png");
+  background-size: cover;
+  color: white;
+  text-align: center
+
+}
+
+.display-3 {
+  margin-left: 10px!important;
+  margin-right: 10px!important;
+}
+
+
+
+
 /* Customize container */
 
 

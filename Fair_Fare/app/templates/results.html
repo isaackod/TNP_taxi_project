@@ -48,7 +48,7 @@ results page
       <td>{{ride_info['end']}}</td>
     </tr>
     <tr>
-      <th scope="row">Time [min]</th>
+      <th scope="row">Trip Time [min]</th>
       <td>{{(ride_info['Trip_Seconds']/60)|int}}</td>
     </tr>
     <tr>
@@ -56,8 +56,14 @@ results page
       <td>{{ride_info['Trip_Miles'] | round(1)}}</td>
     </tr>
     <tr>
-      <th scope="row">Hour of Day</th>
-      <td>{{ride_info['hour']}}</td>
+      <th scope="row">Depart</th>
+      <td>{{ride_info['departure_datetime']}}</td>
+
+    </tr>
+
+    <tr>
+      <th scope="row">Arrive</th>
+      <td>{{ride_info['arrival_datetime']}}</td>
 
     </tr>
 </table>

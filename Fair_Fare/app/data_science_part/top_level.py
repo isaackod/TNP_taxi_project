@@ -32,8 +32,7 @@ def run_model_and_gdirections_api(start, end, start_time,taxi_model,rideshare_mo
     return model_estimate, ride
 
 
-def text_to_fares(binned_rs,binned_tax, start, end, taxi_model,rideshare_model, forecast_hours = 1):
-    curr_time = get_current_time_in_chicago()
+def text_to_fares(binned_rs,binned_tax, start, end, taxi_model,rideshare_model, forecast_hours = 1,curr_time = get_current_time_in_chicago()):
     model_estimate, ride = run_model_and_gdirections_api(start, end,curr_time,taxi_model,rideshare_model, forecast_hours)
 
     lyft_estimates = price_estimate_from_lyft(ride.start.tuple,ride.end.tuple)
@@ -56,7 +55,7 @@ def run_Fair_Fare(USER_PARAMS,rideshare_binned,taxi_binned,taxi_model,rideshare_
 
     model_estimate, lyft_estimate,taxi_group, rideshare_group, ride = text_to_fares(rideshare_binned,taxi_binned,
                                                                                    USER_PARAMS['pickup'], USER_PARAMS['dropoff'],taxi_model,rideshare_model, 
-                                                                                   USER_PARAMS['forecast_hrs'])
+                                                                                   USER_PARAMS['forecast_hrs'], USER_PARAMS['time'])
 
     rideshare_shared_fares = rideshare_group[rideshare_group["Shared_Trip_Authorized"] == True].Final_Fare
     rideshare_fares = rideshare_group[rideshare_group["Shared_Trip_Authorized"] == False].Final_Fare
